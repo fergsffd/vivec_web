@@ -32,3 +32,11 @@ var starterData = {
   }
 }
 doResize(null, starterData);
+
+function getObjDetail(id){
+  windows.open("image")
+}
+
+function showDetail(id) {
+  $('#detail').load('vivec_js_function.php?id=' + id)')
+}

@@ -4,9 +4,9 @@
 error_reporting( E_ALL & ~E_DEPRECATED & ~E_NOTICE );
 // turn on output buffering
 ob_start();
-
-require_once("./libs/php/constants.php");
-require_once("./libs/php/common_functions.php");
+//define('__ROOT__', dirname(__FILE__));
+require_once(dirname(__FILE__) . "/constants.php");
+//require_once(dirname(__FILE__) . "/common_functions.php");
 
 /*
  * turn off magic-quotes support, for runtime e, as it will cause problems if enabled
@@ -27,12 +27,18 @@ $dboptions = array(
 
 //connect with the server
 try {
-    $DB = new PDO(DB_DRIVER . ':host=' . DB_HOST . ';dbname=' . DB_DATABASE, DB_HOST_USERNAME, DB_HOST_PASSWORD, $dboptions);
+    $DB = new PDO(DB_DRIVER . ':host=' . DB_HOST . ';dbname=' .
+    DB_DATABASE, DB_HOST_USERNAME, DB_HOST_PASSWORD, $dboptions);
 } catch (Exception $ex) {
     echo errorMessage($ex->getMessage());
     echo 'Availbale drivers:';
     echo print_r(PDO::getAvailableDrivers());
     die;
 }
+echo 'config - ';
+if ( is_object($DB) ) {
+  echo '$DB obj exists| ';
+}
+else { echo '$DB obj does NOT exist| '; }
 
 ?>
