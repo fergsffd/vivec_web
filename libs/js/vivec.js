@@ -38,5 +38,5 @@ function getObjDetail(id){
 }
 
 function showDetail(id) {
-  $('#detail').load('vivec_js_function.php?id=' + id)')
+  $('#detail').load('vivec_js_function.php?id=' + id))
 }

@@ -3,8 +3,15 @@
 <html>
 <head>
   <link rel="stylesheet" href="./libs/css/vivec.css" media="screen"/>
-  <script type="text/javascript" src="./libs/js/vivec.js"></script>
-  <title>Vivec Object Browsing</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <title>
+    <?php
+      echo '(';
+      echo gethostname();
+      //echo $_SERVER['SERVER_NAME'];
+      echo ' )Vivec Object Browsing';
+    ?>
+  </title>
 </head>
 <body>
   <div class=detail>
@@ -14,7 +21,9 @@
   <div class=film_strip>
     <!-- <button class="button_left" ><</button> -->
     <?php
-      require_once dirname(__FILE__) . "/libs/php/vivec_functions.php";
+      $funcPath =  dirname(__FILE__) . "/libs/php/vivec_functions.php";
+      echo 'funcPath=' . $funcPath;
+      require_once $funcPath;
       $num_of_frames = 5;
       $focused_frame = 3;
       $id = loadObjs();
