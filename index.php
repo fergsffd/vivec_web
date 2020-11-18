@@ -1,17 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML>
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
 <html>
 <head>
   <link rel="stylesheet" href="./libs/css/vivec.css" media="screen"/>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <title>
-    <?php
-      echo '(';
-      echo gethostname();
-      //echo $_SERVER['SERVER_NAME'];
-      echo ' )Vivec Object Browsing';
+  <?php
+      $title = '<title>(' . gethostname() .' )Vivec Object Browsing  </title>';
+      echo $title;
     ?>
-  </title>
+
 </head>
 <body>
   <div class=detail>
