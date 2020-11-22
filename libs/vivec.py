@@ -119,18 +119,19 @@ def config_menu():
 
 
 def db_available(dbw, dbu, dbp, dbn):
+    
     try:
         db = pymysql.connect(host=dbw, user=dbu, password=dbp, db=dbn)
     except pymysql.MySQLError as e:
-        msg = 'Got error {!r}, errno is {}'.format(e, e.args[0])
-        msg = msg + '/n'
-        msg = msg + 'Credentials:',dbu, '@',dbw, 'db name:', dbn
-        return False,msg
+        print('\nGot error {!r}, errno is {}'.format(e, e.args[0]) )
+        print('Credentials:',dbu, '@',dbw, 'db name:', dbn)
+        return False
     try:
         db.close()
     except:
-        pass
-    return True, 'db good'
+        print('Probelm on closing db. Hm')
+    print('accessible')
+    return True
 
 
 def db_config():
@@ -208,12 +209,29 @@ def checkdir(fd, msg=''):
     if not os.path.exists(fd):
         msg = msg + 'directory [' + fd + '] does not exist. '
         print(msg)
-        ans = input('Attempt to create?[y/n]')
-        if ans == 'y':
-            os.makedirs(fd)
-            return True
-        if ans == 'n':
-            return False
+        done = False
+        while not done:
+            ans = input('Attempt to (c)reate, (s)pecify new path or (i)gnore: [i]')
+            if ans == 'c':
+                os.makedirs(fd) # TODO Check if succesful
+                if checkdir(fd, 'entered'):
+                    print('Directory created')
+                    done = True
+                else:
+                    print('Unable to create directory ' + new_fd )
+                    return False
+                return True
+            if ans == 's':
+                new_fd = input('Enter directory path: ')
+                os.makedirs(new_fd) # TODO Check if succesful
+                if checkdir(new_fd, 'entered'):
+                    print('Directory created')
+                    done = True
+                else:
+                    print('Unable to create directory ' + new_fd )
+                    return False
+            if ans == 'i'or ans == '':
+                return False
     return True
 
 
@@ -226,15 +244,17 @@ def writable(fp):  # TODO Is there a better way to test?
         print('Unable to write test file. Permissions?')
         return False
     else:
-        os.remove(fn)
+        os.remove(fn) # TODO Check if succesful
         return True
 
+# OOOOoooooo.... should I do some 'class' stuff for inputconfig? :)
 
-def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, dbh=False):
+def inputconfig(fd=False, fp=False, dbn=False,
+                dbu=False, dbp=False, cam=False, dbh=False):
     """ The received parameters determine if we need to config specified value(s).
     tmp var will hold entered values until verified, then write to config file.
 
-    I breakout the db fail params because I may give more detailed access error.
+    I breakout the db fail params because I may give more detailed access error
     feedback ( bad credential vs schema or table not found).
 
     Need to break out the code for testing user supplied parameters.
@@ -311,7 +331,7 @@ def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, 
                 dbu = True
                 conf_val['db_user'] = tmp_dbu
 
-        while not dbp_done:  # Get a list of available DBs?
+        while not dbp_done:  
             msg = 'Database password:[' + DB_PWD + ']'
             if not dbp:
                 msg = hiLite(msg)
@@ -325,7 +345,7 @@ def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, 
                 dbp = True
                 conf_val['db_pass'] = tmp_pwd
 
-        while not dbh_done:  # Get a list of available DBs?
+        while not dbh_done:  
             msg = 'Hostname:[' + DB_HOST + ']'
             if not dbh:
                 msg = hiLite(msg)
@@ -339,19 +359,12 @@ def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, 
                 dbh = True
                 conf_val['db_host'] = tmp_dbw
 
-        print('Testing database access...')  # FIXME Something is broken here. (d)iscard changes cause loop
-        db_test = db_available(dbu=conf_val['db_user'],
+        # FIXME Something is broken here. (d)iscard changes cause loop
+        db_good = db_available(dbu=conf_val['db_user'],
                                dbp=conf_val['db_pass'],
                                dbn=conf_val['db_name'],
                                dbw=conf_val['db_host'])
-        if not db_test[0]:
-            print('Cannot access db with supplied parameters')
-            print('message: ' . db_test[1])
-            db_good = False
-        else:
-            print('db access ok')
-            db_good = True
-
+        
         while not cam_done:
             msg = 'Camera capture command:[' + CC_COMMAND + ']'
             if not cam:
@@ -413,7 +426,7 @@ def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, 
         file.close()
         print('Changes saved')
         return True
-
+# ============== End inputconfig ==============================
 
 def loadconfig():
     global IMAGE_DIR, IMAGE_PREFIX, DB_PWD, DB_NAME
@@ -454,35 +467,43 @@ def checkconfig():
 
     if DEBUG:
         print('Entered checkConfig')
+    print('Checking image directory... ', end="")
     if not checkdir(IMAGE_DIR, "Image "):
         print('Problem with image directory.')
         a_dict['fd'] = True
         a_dict['isgood'] = False
     else:
-        a_dict['fd'] = True
+        print('ok')
+        a_dict['fd'] = False
 
+    print('Checking image filename prefix... ', end="")
     if IMAGE_PREFIX == '':
         print('Probem with image file prefix(is blank)')
         a_dict['fp'] = True
         a_dict['isgood'] = False
     else:
+        print('ok')
         a_dict['fp'] = False
 
+    print('Checking camera... ', end="")
     if not camera_cmdcheck(CC_COMMAND):
         print('Problem with camera command: ', CC_COMMAND)
         a_dict['cam'] = True
         a_dict['isgood'] = False
     else:
+        print('ok')
         a_dict['cam'] = False
 
+    print('Checking database access...', end='') 
     if not db_available(dbn=DB_NAME, dbu=DB_USER, dbp=DB_PWD, dbw=DB_HOST):
-        print('Problem with database access')
+        #print('Problem with database access')
         a_dict['dbn'] = True
         a_dict['dbu'] = True
         a_dict['dbp'] = True
         a_dict['dbh'] = True
         a_dict['isgood'] = False
     else:
+        print('ok')
         a_dict['dbn'] = False
         a_dict['dbu'] = False
         a_dict['dbp'] = False
@@ -539,7 +560,6 @@ def main(argv):
                 exit()
         elif opt in ('-t', '--test'):
             DEBUG = True
-        if DEBUG:
             print('Test flag on')
         elif opt in ('-a', '--capture'):
             menu_choice = 0  # TODO Make this 'better'.  Reduce the need for hard coding.
@@ -575,7 +595,7 @@ def main(argv):
     chk_config = checkconfig()
     if not chk_config['isgood']:
         del chk_config['isgood']
-        print('Problem with config. Would you like to enter new config params?', end='')
+        print('Problem with config. Would you like to enter new params? (y/n) [y]:', end='')
         if input('') == 'y':
             inputconfig(**chk_config)
     else:
