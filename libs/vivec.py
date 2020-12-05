@@ -47,6 +47,9 @@ DB_COL_INV = 'InInventory'
 DB_COL_OBJ_NAME = 'ShoeName'
 
 class ConfigSettings:
+	
+	""" class is responsible for all things config """
+	
 	def __init__(self, db_name, db_user, db_pass, db_host,
 	                   fn_path, fn_prefix, camera )
 	    parser = configparser.ConfigParser()
