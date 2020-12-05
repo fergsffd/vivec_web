@@ -94,10 +94,13 @@ class ConfigSettings:
 	def check_db_host( self ):
 		print('checking db host ' + db_host)
 		
-	def check_fn_path( self, path, check_only=False, abort=False):
+	def check_fn_path( self, path, check_only=False):
+		path = expanduser(path)
+		abort = False
+		isGood = False
 		if not check_only:
 			print('checking image file pathname ' + path)
-		isGood = False
+		
 		while not os.path.exists(path)and not abort:
 			if check_only:
 				msg = msg + 'directory [' + path + '] does not exist. '
@@ -110,8 +113,12 @@ class ConfigSettings:
 						isGood = True
 					except OSError as error: 
 						print("Directory '%s' can not be created")
-						input('Specify new directory 
-  
+						notDone = True
+						while notDone
+							ans = input('Specify new directory? (y/n) [y]:')
+							if ans.lower == 'y' or and == '':
+								newpath = input('Path: ')
+								
             return True
         if ans == 'n':
             return False
