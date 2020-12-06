@@ -22,18 +22,18 @@ from os.path import isfile, expanduser
 import pymysql
 import configparser
 
-# Default globals. Assigned in the loadconfig and setconfig functions, nowhere else
-DEBUG = False
-CONFIG_DIR = expanduser('~/vivec')
-CONFIG_FN = '/.vconfig'
-CONFIG_FILE = CONFIG_DIR + CONFIG_FN
-IMAGE_DIR = CONFIG_DIR + '/images/'
-IMAGE_PREFIX = 'image'
-CC_COMMAND = '/usr/bin/raspistill -vf -hf -t 10 -o '  # Camera Capture
-DB_USER: str = "none"
-DB_NAME = 'vivecdb'
-DB_PWD = 'password'
-DB_HOST = 'LOCALHOST'
+
+CFG = { DEBUG : False,
+		DIR : '~/vivec',
+		FN : '/.vconfig',
+		IMG_DIR : '/images/',
+		IMG_PREFIX : 'image',
+		CAMERA = '/usr/bin/raspistill -vf -hf -t 10 -o ',
+		DB_USER : "none",
+		DB_NAME : 'vivecdb',
+		DB_PWD : 'password',
+		DB_HOST : 'LOCALHOST'
+	  }
 CONFIG_SECTION_NAME = 'SETTINGS'
 
 # DB values below are for testing. will make a user input method later
@@ -48,32 +48,35 @@ DB_COL_OBJ_NAME = 'ShoeName'
 
 class ConfigSettings:
 	
-	""" class is responsible for all things config """
+	""" class is responsible for many things config """
 	
-	def __init__(self, db_name, db_user, db_pass, db_host,
-	                   fn_path, fn_prefix, camera )
-	    parser = configparser.ConfigParser()
-		parser.read(CONFIG_FILE)
-		for sect in parser.sections():
-			if DEBUG:
-            print('Section:', sect)
-			for k, v in parser.items(sect):
+	def __init__(self, config_file_exist ):
+		global CFG
+		if config_file_exist:
+			parser = configparser.ConfigParser()
+			parser.read(CONFIG_FILE)
+			for sect in parser.sections():
 				if DEBUG:
-					print(' {} = {}'.format(k, v))
-				if k == 'fn_path':
-					fn_path = expanduser(v)
-				elif k == 'fn_prefix':
-					fn_prefix = v
-				elif k == 'db_name':
-					db_name = v
-				elif k == 'db_user':
-					db_user = v
-				elif k == 'db_pass':
-					db_pass = v
-				elif k == 'camera':
-					camera = v
-				elif k == 'db_host':
-					db_host = v
+				print('Section:', sect)
+				for k, v in parser.items(sect):
+					if DEBUG:
+						print(' {} = {}'.format(k, v))
+					if k == 'fn_path':
+						 CFG[DIR] = expanduser(v)
+					elif k == 'fn_prefix':
+						CFG[IMG_PREFIX] = v
+					elif k == 'db_name':
+						CFG[DB_NAME] = v
+					elif k == 'db_user':
+						CFG[DB_USER] = v
+					elif k == 'db_pass':
+						CFG[DB_PWD] = v
+					elif k == 'camera':
+						CFG[CAMERA] = v
+					elif k == 'db_host':
+						db_host = v
+		else:
+			
 	    self.db_name = db_name
 	    self.db_user = db_user             
 	    self.db_pass = db_pass
@@ -81,6 +84,9 @@ class ConfigSettings:
 	    self.fn_path = fn_path
 	    self.fn_prefix = fn_prefix
 	    self.camera = camera
+	    #---------------------------------------
+	def check_config( self ):
+		print('Check config')
 	     
 	def check_db_name( self ):
 		print('checking db name ' + db-name)
@@ -88,29 +94,32 @@ class ConfigSettings:
 	def check_db_user( self ):
 		print('checking db user ' + db_user)
 		
-	def check_db_pass self ):
+	def check_db_pass( self ):
 		print('checking db password ' + db_pass)
 
 	def check_db_host( self ):
 		print('checking db host ' + db_host)
-		
-	def check_fn_path( self, path, silent=False):
+#---------------------------------------------------
+	
+	def check_fn_path( self, path, subj='', silent=False):
+		# subj allows for a bit more generic use
 		path = expanduser(path)
 		abort = False
-		isGood = False
+
 		if not silent:
-			print('checking image file pathname ' + path)
+			print('checking ' + subj + ' pathname ' + path)
+		fp_exist = os.path.exists(path)
 		
-		while not os.path.exists(path)and not abort:
+		while not fp_exist and not abort:
 			if not silent:
 				msg = msg + 'directory [' + path + '] does not exist. '
 				print(msg)
-				ans = input('Attempt to create?[y/n]')
+				ans = input('Attempt to create? (y/n) [y]:')
 			if ans == 'y' or silent:
 				try: 
 					os.makedirs(path, exist_ok = True) 
 					print("Directory '%s' created successfully" %directory) 
-					isGood = True
+					fp_exist = True
 				except OSError as error: 
 					print("Directory '%s' can not be created")
 					notDone = True
@@ -118,19 +127,21 @@ class ConfigSettings:
 						ans = input('Specify new directory? (y/n) [y]:')
 						if ans.lower == 'y' or ans == '':
 							newpath = input('Path: ')
-							isGood, aborted = check_fn_path( newpath, True )
-							# =======
-					
-								
-        return True
-        if ans == 'n':
-            return False
+							fp_exist, abort, chkd_path = check_fn_path( newpath, subj, True )
+							notDone = fp_exist or abort
+						else:
+							notDone = False
+							abort = True
+			else:
+				abort = True
+		
+		return fp_exist, abort, path
+#----------------------------------------------------------						
 		
 	def check_fn_prefix( self ):
 		print('checking image filename prefix ' + fn_prefix)
 
-
-#-----------------------------------------------------------------
+# End ConfigSettings class =============================================
 
 def do_mainmenu():
 
@@ -289,7 +300,7 @@ def writable(fp):  # TODO Is there a better way to test?
         return True
 
 
-def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, dbh=False):
+"""def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, dbh=False):
     # the recieved parameters determine if we need to config specified value(s)
     # tmp var will hold entered values until verified, then stored
 
@@ -464,9 +475,9 @@ def inputconfig(fd=False, fp=False, dbn=False, dbu=False, dbp=False, cam=False, 
         file.close()
         print('Changes saved')
         return True
+"""
 
-
-def checkconfig():
+"""def checkconfig():
     # Coded this function to use possible future robust validity checks
 
     # Returns a list of valid(False) and invalid(True) config entries
@@ -511,7 +522,7 @@ def checkconfig():
         a_dict['dbh'] = False
 
     return a_dict
-
+"""
 
 def showconfig():
     print('Image file directory:', IMAGE_DIR)
@@ -564,12 +575,11 @@ def main(argv):
             dir_done = False
             tmp_cnf = ''
             while not dir_done:
-                msg = 'Path for config file?[', os.getcwd(), ' ]?'
-                ans: str = input(msg)
-                if ans == '':
+                msg = 'Path for config file?[', os.getcwd(), ' ]:'
+                tmp_cnf: str = input(msg)
+                if tmp_cnf == '':
                     tmp_cnf = CONFIG_DIR
-                else:
-                    tmp_cnf = expanduser(tmp_cnf)
+                
                 if not checkdir(tmp_cnf):
                     print('Cannot create config file directory', tmp_cnf)
                 else:
