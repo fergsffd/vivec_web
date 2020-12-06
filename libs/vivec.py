@@ -94,32 +94,35 @@ class ConfigSettings:
 	def check_db_host( self ):
 		print('checking db host ' + db_host)
 		
-	def check_fn_path( self, path, check_only=False):
+	def check_fn_path( self, path, silent=False):
 		path = expanduser(path)
 		abort = False
 		isGood = False
-		if not check_only:
+		if not silent:
 			print('checking image file pathname ' + path)
 		
 		while not os.path.exists(path)and not abort:
-			if check_only:
+			if not silent:
 				msg = msg + 'directory [' + path + '] does not exist. '
 				print(msg)
 				ans = input('Attempt to create?[y/n]')
-				if ans == 'y':
-					try: 
-						os.makedirs(path, exist_ok = True) 
-						print("Directory '%s' created successfully" %directory) 
-						isGood = True
-					except OSError as error: 
-						print("Directory '%s' can not be created")
-						notDone = True
-						while notDone
-							ans = input('Specify new directory? (y/n) [y]:')
-							if ans.lower == 'y' or and == '':
-								newpath = input('Path: ')
+			if ans == 'y' or silent:
+				try: 
+					os.makedirs(path, exist_ok = True) 
+					print("Directory '%s' created successfully" %directory) 
+					isGood = True
+				except OSError as error: 
+					print("Directory '%s' can not be created")
+					notDone = True
+					while notDone
+						ans = input('Specify new directory? (y/n) [y]:')
+						if ans.lower == 'y' or ans == '':
+							newpath = input('Path: ')
+							isGood, aborted = check_fn_path( newpath, True )
+							# =======
+					
 								
-            return True
+        return True
         if ans == 'n':
             return False
 		
