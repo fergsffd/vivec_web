@@ -62,20 +62,19 @@ class ConfigSettings:
 					if DEBUG:
 						print(' {} = {}'.format(k, v))
 					if k == 'fn_path':
-						 CFG[DIR] = expanduser(v)
+						 CFG[ DIR ] = expanduser(v)
 					elif k == 'fn_prefix':
-						CFG[IMG_PREFIX] = v
+						CFG[ IMG_PREFIX ] = v
 					elif k == 'db_name':
-						CFG[DB_NAME] = v
+						CFG[ DB_NAME ] = v
 					elif k == 'db_user':
-						CFG[DB_USER] = v
+						CFG[ DB_USER ] = v
 					elif k == 'db_pass':
-						CFG[DB_PWD] = v
+						CFG[ DB_PWD ] = v
 					elif k == 'camera':
-						CFG[CAMERA] = v
+						CFG[ CAMERA ] = v
 					elif k == 'db_host':
-						db_host = v
-		else:
+						CFG[ DB_HOST ] = v
 			
 	    self.db_name = db_name
 	    self.db_user = db_user             
@@ -85,20 +84,26 @@ class ConfigSettings:
 	    self.fn_prefix = fn_prefix
 	    self.camera = camera
 	    #---------------------------------------
+	    configIsGood = True
 	def check_config( self ):
 		print('Check config')
+		check_fn_path
 	     
 	def check_db_name( self ):
 		print('checking db name ' + db-name)
+		return True
 		 
 	def check_db_user( self ):
 		print('checking db user ' + db_user)
+		return True
 		
 	def check_db_pass( self ):
 		print('checking db password ' + db_pass)
+		return True
 
 	def check_db_host( self ):
 		print('checking db host ' + db_host)
+		return True
 #---------------------------------------------------
 	
 	def check_fn_path( self, path, subj='', silent=False):
@@ -140,6 +145,7 @@ class ConfigSettings:
 		
 	def check_fn_prefix( self ):
 		print('checking image filename prefix ' + fn_prefix)
+		return True
 
 # End ConfigSettings class =============================================
 
