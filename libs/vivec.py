@@ -24,15 +24,16 @@ import configparser
 
 
 CFG = { DEBUG : False,
-		DIR : '~/vivec',
-		FN : '/.vconfig',
+		CNF_DIR : '~/vivec',
 		IMG_DIR : '/images/',
 		IMG_PREFIX : 'image',
 		CAMERA = '/usr/bin/raspistill -vf -hf -t 10 -o ',
 		DB_USER : "none",
 		DB_NAME : 'vivecdb',
 		DB_PWD : 'password',
-		DB_HOST : 'LOCALHOST'
+		DB_HOST : 'LOCALHOST',
+		CHANGED : False
+CONFIG_FILE = CFG[CNF_DIR] + '/.vconfig'
 	  }
 CONFIG_SECTION_NAME = 'SETTINGS'
 
@@ -51,7 +52,7 @@ class ConfigSettings:
 	""" class is responsible for many things config """
 	
 	def __init__(self, config_file_exist ):
-		global CFG
+		#global CFG
 		if config_file_exist:
 			parser = configparser.ConfigParser()
 			parser.read(CONFIG_FILE)
@@ -85,6 +86,8 @@ class ConfigSettings:
 	    self.camera = camera
 	    #---------------------------------------
 	    configIsGood = True
+	    
+		
 	def check_config( self ):
 		print('Check config')
 		check_fn_path
@@ -538,20 +541,23 @@ def showconfig():
     print('Database hostname   :', DB_HOST)
     print('Database password not shown')
     print('Camera capture cmd  :', CC_COMMAND)
+    
+def set_config_full_fn( self, path ): 
+	reutrn ( path + '/.vconfig' )
 
 
 # ================= End config stuff ======================
 
 def printusage():
     print('Usage: vivec.py [OPTION]')
-    print(' -h,  --help                   usage information')
-    print(' -c,  --config="<configfile>"  path to configuration file')
-    print(' -t   --test                   no hardware or db writes')
+    print(' -h,  --help					usage information')
+    print(' -c,  --config="<dir>"  		path to configuration file')
+    print(' -t   --test                 no hardware or db writes')
 
 
 ###########################
 def main(argv):
-    global CONFIG_DIR, CONFIG_FN, CONFIG_FILE, DEBUG
+    #global CONFIG_DIR, CONFIG_FN, CONFIG_FILE, DEBUG
 
     try:
         opts, args = getopt.getopt(argv, "htc:", ['help', 'test', "config="])
@@ -563,9 +569,11 @@ def main(argv):
             printusage()
             sys.exit()
         elif opt in ("-c", "--config"):
-            cnf = expanduser(arg)
+			arg = expanduser(arg)
+            cnf = arg + '/.vconfig'
             if isfile(cnf):
-                CONFIG_FILE = cnf
+                CFG[DIR] = arg
+                CONFIG_FILE = set_config_(arg)
             else:
                 print('config file does not exist')
                 exit()
@@ -573,6 +581,8 @@ def main(argv):
             DEBUG = True
         if DEBUG:
             print('Test flag on')
+            
+    config = ConfigSettings( )
 
     if not isfile(CONFIG_FILE):
         print('Cannot locate config file:', CONFIG_FILE)
