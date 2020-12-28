@@ -32,9 +32,9 @@ CFG = { DEBUG : False,
 		DB_NAME : 'vivecdb',
 		DB_PWD : 'password',
 		DB_HOST : 'LOCALHOST',
-		CHANGED : False
+		CHANGED : False		}
+		
 CONFIG_FILE = CFG[CNF_DIR] + '/.vconfig'
-	  }
 CONFIG_SECTION_NAME = 'SETTINGS'
 
 # DB values below are for testing. will make a user input method later
@@ -52,7 +52,7 @@ class ConfigSettings:
 	""" class is responsible for many things config """
 	
 	def __init__(self, config_file_exist ):
-		#global CFG
+		global CFG
 		if config_file_exist:
 			parser = configparser.ConfigParser()
 			parser.read(CONFIG_FILE)
